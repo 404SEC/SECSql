@@ -7,25 +7,26 @@ import (
 	l "github.com/404SEC/SECSql/logic"
 )
 
-var (
-	SECSqlTyp     string //数据库连接ID
-	SECSqlConn    string //数据库名
-	SECSqlExecstr string //数据库执行语句
-)
+type SECSql struct {
+	Typ  string //数据库连接ID
+	Conn string //数据库名
+}
 
-func ExecOnece(exeStr string) string {
-	SECSqlExecstr = exeStr
+func (SECSql *SECSql) ExecOnece(Execstr string) (string, error) {
 
 	sqlRet := ""
-	switch SECSqlTyp {
+	switch SECSql.Typ {
 	case "hive":
-		sqlRet = l.HiveExec(SECSqlConn, SECSqlExecstr)
+		sqlRet, err := l.HiveExec(SECSql.Conn, Execstr)
+		if err != nil {
+			return sqlRet, err
+		}
 	case "mysql", "postgres", "mssql", "sqlite3", "oracle":
-		if SECSqlTyp == "oracle" {
-			SECSqlTyp = "oci8"
+		if SECSql.Typ == "oracle" {
+			SECSql.Typ = "oci8"
 		}
 
-		IDb, err := sql.Open(SECSqlTyp, SECSqlConn)
+		IDb, err := sql.Open(SECSql.Typ, SECSql.Conn)
 		if err != nil {
 			log.Println(err.Error())
 		}
@@ -34,15 +35,18 @@ func ExecOnece(exeStr string) string {
 			log.Println(err.Error())
 		}
 
-		sqlRet = l.DatabaseExec(IDb, SECSqlExecstr)
+		sqlRet, err := l.DatabaseExec(IDb, Execstr)
+		if err != nil {
+			return sqlRet, err
+		}
 		IDb.Close()
 	}
-	return sqlRet
+	return sqlRet, nil
 }
 
-func Open(typ string, conn string) {
-
-	SECSqlConn = conn
-	SECSqlTyp = typ
-
+func Ini(typ string, conn string) SECSql {
+	var DB SECSql
+	DB.Conn = conn
+	DB.Typ = typ
+	return DB
 }
