@@ -8,8 +8,8 @@ import (
 )
 
 type SECSql struct {
-	Typ  string //数据库连接ID
-	Conn string //数据库名
+	Typ  string  
+	Conn string  
 }
 
 func (SECSql *SECSql) ExecOnece(Execstr string) (string, error) {
