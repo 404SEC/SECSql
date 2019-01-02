@@ -1,7 +1,7 @@
 # SECSql
 database manager Suitable for multiple databases
 ```
-go get 404SEC/SECSql
+go get github.com/404SEC/SECSql
 ```
 test code
 ```
