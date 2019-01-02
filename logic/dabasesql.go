@@ -13,7 +13,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func DatabaseExec(IDb *sql.DB, ExecStr string) string {
+func DatabaseExec(IDb *sql.DB, ExecStr string) (string, error) {
 
 	//	IDb, err := sql.Open(typ, Conn)
 	reCl := ""
@@ -23,51 +23,60 @@ func DatabaseExec(IDb *sql.DB, ExecStr string) string {
 		mexStr := strings.TrimSpace(v)
 		d := strings.Split(mexStr, " ")
 		if strings.ToLower(d[0]) == "select" || strings.ToLower(d[0]) == "show" || strings.ToLower(d[0]) == "desc" {
+			mres, err := ISelect(IDb, mexStr)
+			if err != nil {
+				return reCl, err
+			}
 			if reCl == "" {
-				reCl = reCl + ISelect(IDb, mexStr)
+
+				reCl = reCl + mres
+
 			} else {
-				reCl = reCl + "," + ISelect(IDb, mexStr)
+				reCl = reCl + "," + mres
 			}
 
 		} else {
-			if IExec(IDb, mexStr) {
-				reCl = "ture"
-			} else {
-				reCl = "false"
+			mres, err := IExec(IDb, mexStr)
+			if err != nil {
+				return reCl, err
 			}
-
+			if mres {
+				reCl = `{"result":"ture"}`
+			} else {
+				reCl = `{"result":"false"}`
+			}
 		}
 	}
-	return reCl
+	return reCl, nil
 }
 
-func IExec(IDB *sql.DB, str string) bool {
+func IExec(IDB *sql.DB, str string) (bool, error) {
 
 	ret, err := IDB.Exec(str)
 	if err != nil {
 		log.Println(err.Error())
-		return false
+		return false, err
 	}
 	_, err = ret.RowsAffected()
 	if err != nil {
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }
-func ISelect(IDB *sql.DB, str string) string {
+func ISelect(IDB *sql.DB, str string) (string, error) {
 	ret := "["
 	rows, err := IDB.Query(str)
 	if err != nil {
 		log.Println(err.Error())
-		return ret
+		return ret, err
 	}
 	return ITOjson(rows)
 }
-func ITOjson(rows *sql.Rows) string {
+func ITOjson(rows *sql.Rows) (string, error) {
 	columns, err1 := rows.Columns()
 	if err1 != nil {
 		log.Println(err1.Error())
-		return ""
+		return "", err1
 	}
 	values := make([]string, len(columns))
 
@@ -101,5 +110,5 @@ func ITOjson(rows *sql.Rows) string {
 	}
 	list = list[0 : len(list)-1]
 	list += "]"
-	return list
+	return list, nil
 }
