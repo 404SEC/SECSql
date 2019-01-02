@@ -8,13 +8,13 @@ import (
 	"github.com/dazheng/gohive"
 )
 
-func HiveExec(Conn string, ExecStr string) string {
+func HiveExec(Conn string, ExecStr string) (string, error) {
 
 	c1 := ""
 	conn, err := gohive.Connect(Conn, gohive.DefaultOptions) // 无用户名、密码
 	if err != nil {
 		log.Println(err.Error())
-		return ""
+		return "", err
 	}
 	re := strings.Split(ExecStr, "\r\n")
 	for _, v := range re {
@@ -24,7 +24,7 @@ func HiveExec(Conn string, ExecStr string) string {
 			rs, err := conn.Query(m)
 			if err != nil {
 				log.Println(err.Error())
-				return ""
+				return "", err
 			}
 			if c1 == "" {
 				c1 = c1 + TOjson(rs)
@@ -38,7 +38,7 @@ func HiveExec(Conn string, ExecStr string) string {
 		}
 	}
 	conn.Close()
-	return c1
+	return c1, nil
 
 }
 
