@@ -1,0 +1,230 @@
+{{template "header" .}}
+<div class="right_col" role="main" style="min-height: 3538px;">
+
+  <div class="clearfix"></div>
+  <div class="row">
+    <div class="col-md-1 col-sm-1 col-xs-12"></div>
+    <div class="col-md-10 col-sm-10 col-xs-12">
+
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>数据源管理 <small> </small></h2>
+          <ul class="nav navbar-right panel_toolbox">
+            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Settings 1</a>
+                </li>
+                <li><a href="#">Settings 2</a>
+                </li>
+              </ul>
+            </li>
+            <li><a class="close-link"><i class="fa fa-close"></i></a>
+            </li>
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+          <div class="table-responsive">
+            <div name="tag" id="tag">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <td width="150">字段名称</td>
+                    <td>数据库类型</td>
+                    <td>数据库连接</td>
+                    <td>描述</td>
+                  </tr>
+                </thead>
+                <tr>
+                  <form class="form-inline" method="post" id="addconn">
+                    <!-- -->
+                    <td>
+                      <div class="form-group">
+                        <input class="form-control  " name="Name" />
+
+                      </div>
+                    </td>
+                    <!---->
+                    <td>
+                      <div class="form-group">
+                        <select class="form-control" name="Types" />
+                        <option value="hive">hive</option>
+
+                        <option value="mysql">mysql </option>
+                        <option value="postgres">postgres</option>
+                        <option value="sqlite3">sqlite3</option>
+                        <option value="oracle">oracle</option>
+                        <option value="mssql">mssql</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="form-group">
+                        <input class="form-control" name="ConnStr" />
+
+                      </div>
+                    </td>
+
+                    <!-- -->
+                    <td>
+                      <div class="form-group">
+                        <input class="form-control" name="Info" />
+
+                      </div>
+                    </td>
+
+                    <td>
+                      <ol class="breadcrumb ">
+                          <input type="hidden" name="Action" value="addconn" />
+                        
+
+                        <li><a id="ad" type="btn btn-default" name="ad" href="#">添加字段</a> </li>
+                      </ol>
+                    </td>
+                  </form>
+                </tr>
+                {{$ln:=len .Ta }}
+                {{if gt $ln 0}}
+                {{range $i, $v := .Ta }}
+                <tr name="daa" id="daa">
+                  <form id="now" method="post">
+
+
+                    <td>
+                      <div class="form-group">
+                        <input type="text" name="name" class="form-control " id="Name" value="{{$v.Name}}" disabled>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="form-group">
+                        <select class="form-control" id="type" name="Types" disabled />
+                        <option selected="selected" value="{{$v.Types}}">{{$v.Types}}</option>
+                        <datalist id="listor">
+
+                            <option value="hive">hive</option>
+
+                            <option value="mysql">mysql </option>
+                            <option value="postgres">postgres</option>
+                            <option value="sqlite3">sqlite3</option>
+                            <option value="oracle">oracle</option>
+                            <option value="mssql">mssql</option>
+
+                        </datalist>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="form-group">
+                        <input class="form-control" name="ConnStr" value="{{$v.ConnStr}}" disabled />
+
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="form-group">
+                          <input type="hidden" name="ID" value="{{$v.ID}}" />
+                        <input class="form-control" name="Info" value="{{$v.Info}}" disabled />
+
+                      </div>
+                    </td>
+                     <td>
+                      <ol class="breadcrumb ">
+                        <li><a id="xiu" name="xiu" href="#">修改</a> <a name="del" id="del" href="#">删除</a></li>
+                      </ol>
+                    </td>
+                  </form>
+                </tr>
+                {{end}}
+                {{end}}
+            </div>
+
+            <!--内容-->
+            </table>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+function geturltojson(href){
+    
+    var paramArr = href.split('&');
+    var res = {};
+    for(var i = 0;i<paramArr.length;i++){
+        var str = paramArr[i].split('=');
+        res[str[0]]=str[1];
+    }    
+   return JSON.stringify(res)
+}
+
+function getForm() {
+
+    return JSON.stringify($('#addconn').serializeJSON());
+  }
+
+  function doAjax(u,param){
+      $.ajax({
+        type: "POST",
+        url: u,
+        data: param,
+        dataType: "text",
+        contentType: "application/json",
+        success: function (result) {
+
+					alert("success");
+
+        }, error: function () {
+          alert("error");
+
+          //document.getElementById('res').value = "E";
+        }
+      });
+	}
+</script>
+
+<script type="text/javascript">
+  
+  $(function () {
+    $("#xiu").click(
+				function(){
+					if (flip++ % 2 === 0){
+						$(this).parent().parent().parent().parent().find("input").removeAttr("disabled");
+            $(this).parent().parent().parent().parent().find("select").removeAttr("disabled");
+						$(this).text("保存");
+					}else{
+						var da='Action=moticonn&'+$(this).parent().parent().parent().parent().find("form").serialize();
+						$(this).parent().parent().parent().parent().find("input").attr("disabled","disabled");
+            $(this).parent().parent().parent().parent().find("select").attr("disabled","disabled");
+
+						$(this).text("修改");
+						doAjax('/',geturltojson(da));
+						 
+					}
+				}
+			);
+
+    $("#ad").click(function () {
+      var data = getForm();
+      
+      doAjax("/",data)
+      window.location.reload();
+    });
+
+    $("#del").click(
+      function(){
+					$(this).parent().parent().parent().parent().find("input").removeAttr("disabled");
+          $(this).parent().parent().parent().parent().find("select").removeAttr("disabled");
+					var c='Action=delconn&'+$(this).parent().parent().parent().parent().find("form").serialize() ;
+          
+					doAjax('/',geturltojson(c));
+				 	window.location.reload();
+				}
+    );
+  })
+</script>
+{{template "footer" .}}  

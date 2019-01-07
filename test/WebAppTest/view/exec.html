@@ -1,0 +1,288 @@
+{{template "header" .}}
+
+<body>
+
+  <div class="navbar nav_title" style="border: 0;">
+    <a href="index.html" class="site_title"><i class="fa fa-database"></i> <span>DT-BIGDATA</span></a>
+  </div>
+  <br />
+  <form id="execform">
+    <div class="row">
+      <div class="col-md-1 col-sm-1 col-xs-12"></div>
+      <div class="col-md-2 col-sm-2 col-xs-12 table-bordered "> <br>
+        <select class="select2_group form-control" id="conn" name="ConnID" onchange="selectOnchang(this)">
+          <option disabled selected>---请选择---</option>
+
+          {{$a:= .Ta}}
+          {{$le:= len $a}}
+          {{if gt $le 0}}
+          {{range $i, $v := .Ta}}
+          {{$ty:=""}}
+          {{if ne $ty $v.Types}}
+          </optgroup>
+          <optgroup label="{{$v.Types}}">
+            {{end}}
+            <option value="{{$v.ID}}">{{$v.Name}}</option>
+
+            {{end}}
+
+            {{end}}
+
+        </select>
+        <br>
+        <input type="hidden" id="RunType" name="RunType" value="" />
+        <ul>
+          <div id="uldatabase">
+
+          </div>
+        </ul>  
+      </div>
+      <div class="col-md-9  ">
+        <div class="x_content">
+          <div class="form-group col-md-12">
+            <label>数据表 <span class="required">*</span>
+            </label>
+            <br>
+            <ul class="xx">
+              <div id="ultables">
+
+
+
+
+              </div>
+            </ul>
+          </div>
+
+          <br>
+          <div class="form-group col-md-12">
+            <label class="control-label col-md-1 col-sm-1 col-xs-12">执行命令 <span class="required">*</span>
+            </label>
+            <div class="col-md-10 col-sm-6 col-xs-12">
+              <textarea class="form-control" rows="5" name="Execstr"></textarea>
+
+            </div>
+          </div>
+          <br>
+          <br>
+          <div class="ln_solid"></div>
+          <br>
+          <br> <br>
+          <br>
+
+          <div class="form-group col-md-12">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+              <input type="button" id="su" class="btn btn-block btn-success" value="执行"></input>
+            </div>
+          </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <div class="ln_solid"></div>
+
+        <div class="form-group col-md-10">
+          <label class="control-label col-md-1 col-sm-1 col-xs-12">结果-- <span class="required">*</span>
+          </label>
+          <div class="col-md-10 col-sm-6 col-xs-12">
+            <div class="x_content">
+              <div id="div1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <script type="text/javascript">
+    function getForm() {
+
+      return JSON.stringify($('#execform').serializeJSON());
+    }
+
+    function parseHead(oneRow) {
+      var headArray = [];
+      for (var i in oneRow) {
+        headArray[headArray.length] = i;
+      }
+      return headArray
+    }
+    function appendTable(resss) {
+
+      var jsonArray = resss;
+
+      var headArray = parseHead(jsonArray[0]);
+      var div = document.getElementById("div1");
+
+
+      var table = document.createElement("table");
+      table.className = "table";
+      table.id = "bbb"
+      var thead = document.createElement("tr");
+      for (var count = 0; count < headArray.length; count++) {
+        var td = document.createElement("th");
+        td.innerHTML = headArray[count];
+        thead.appendChild(td);
+      }
+      table.appendChild(thead);
+
+      for (var tableRowNo = 0; tableRowNo < jsonArray.length; tableRowNo++) {
+        var tr = document.createElement("tr");
+        for (var headCount = 0; headCount < headArray.length; headCount++) {
+          var cell = document.createElement("td");
+          cell.innerHTML = jsonArray[tableRowNo][headArray[headCount]];
+          tr.appendChild(cell);
+        }
+        table.appendChild(tr);
+      }
+      div.appendChild(table);
+
+
+    }
+    function Greatedatabase(param) {
+      data = eval(param);
+      var a = "";
+
+      var had = parseHead(data[0])
+      for (var count = 0; count < data.length; count++) {
+        a = a + '<li><div class="radio"> <label><input type="radio" class="flat" name="Databse" value="' + data[count][had[0]] + '" onclick="selectDatabase()">' + data[count][had[0]] + '</label></div> </li>';
+      }
+
+      $('#uldatabase').html(a);
+    }
+    function CreateTables(param) {
+      data = eval(param);
+      var a = "";
+      var had = parseHead(data[0])
+      for (var count = 0; count < data.length; count++) {
+        a = a + '<li><div class="radio"> <label><input type="radio" class="flat" name="Tabl" value="' + data[count][had[0]] + '" onclick="selectTable()">' + data[count][had[0]] + '</label></div> </li>';
+      }
+
+      $('#ultables').html(a);
+    }
+
+  </script>
+  <script>
+    $(function () {
+      $("#su").click(function () {
+        var resul = "";
+
+        var data = getForm();
+
+        $.ajax({
+          type: "POST",
+          url: "/exec",
+          data: data,
+          dataType: "text",
+          contentType: "application/json",
+          cache: false,
+          async: false,
+          success: function (resul) {
+            var testTbody = $("#div1");
+            testTbody.empty();
+
+
+            appendTable(eval(resul));
+
+          }, error: function () {
+            //document.getElementById('res').value = "E";
+            console.log(XMLHttpRequest);
+
+          }
+        });
+      });
+
+      $("#xiu").click(
+        function () {
+          if (flip++ % 2 === 0) {
+            $(this).parent().parent().parent().parent().find("input").removeAttr("disabled");
+            $(this).text("保存");
+          } else {
+            var da = 'Action=moticonn&' + $(this).parent().parent().parent().parent().find("form").serialize();
+            $(this).parent().parent().parent().parent().find("input").attr("disabled", "disabled");
+            $(this).text("修改");
+            doAjax('/', geturltojson(da));
+
+          }
+        }
+      );
+
+
+
+    });
+
+    function selectOnchang(obj) {
+      // var value = obj.options[obj.selectedIndex].value;
+      $('#RunType').val('getdatabase');
+      data = JSON.stringify($('#execform').serializeJSON());
+
+
+      $.ajax({
+        type: "POST",
+        url: "/exec",
+        data: data,
+        dataType: "text",
+        contentType: "application/json",
+        success: function (result) {
+
+          Greatedatabase(result)
+
+        }, error: function () {
+          alert("error");
+
+          //document.getElementById('res').value = "E";
+        }
+      });
+      $('#RunType').val('');
+    }
+
+    function selectDatabase(obj) {
+      $('#RunType').val('gettables');
+      // var value = obj.options[obj.selectedIndex].value;
+      data = JSON.stringify($('#execform').serializeJSON());
+      $.ajax({
+        type: "POST",
+        url: "/exec",
+        data: data,
+        dataType: "text",
+        contentType: "application/json",
+        success: function (result) {
+
+          CreateTables(result)
+
+        }, error: function () {
+          alert("error");
+
+          //document.getElementById('res').value = "E";
+        }
+      });
+      $('#RunType').val('');
+    }
+
+    function selectTable(obj) {
+      $('#RunType').val('getlimit');
+      // var value = obj.options[obj.selectedIndex].value;
+      data = JSON.stringify($('#execform').serializeJSON());
+      $.ajax({
+        type: "POST",
+        url: "/exec",
+        data: data,
+        dataType: "text",
+        contentType: "application/json",
+        success: function (result) {
+
+          var testTbody = $("#div1");
+           testTbody.empty();
+
+
+           appendTable(eval(result));
+
+        }, error: function () {
+          alert("error");
+
+          //document.getElementById('res').value = "E";
+        }
+      });
+      $('#RunType').val('');
+    }
+  </script>
+  {{template "footer" .}}
