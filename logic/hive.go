@@ -14,7 +14,7 @@ func HiveExec(Conn string, ExecStr string) (string, error) {
 	conn, err := gohive.Connect(Conn, gohive.DefaultOptions) // 无用户名、密码
 	if err != nil {
 		log.Println(err.Error())
-		return "", err
+		return `{"result":"false"}`, err
 	}
 	re := strings.Split(ExecStr, "\r\n")
 	for _, v := range re {
@@ -24,7 +24,7 @@ func HiveExec(Conn string, ExecStr string) (string, error) {
 			rs, err := conn.Query(m)
 			if err != nil {
 				log.Println(err.Error())
-				return "", err
+				return `{"result":"false"}`, err
 			}
 			if c1 == "" {
 				c1 = c1 + TOjson(rs)
@@ -33,8 +33,11 @@ func HiveExec(Conn string, ExecStr string) (string, error) {
 			}
 
 		} else {
-
 			_, err = conn.Exec(m)
+			if err != nil {
+
+				c1 = `{"result":"false"}`
+			}
 		}
 	}
 	conn.Close()
